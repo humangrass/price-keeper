@@ -6,7 +6,9 @@ import (
 	"os"
 
 	"github.com/humangrass/price-keeper/config"
+	"github.com/humangrass/price-keeper/domain/repository"
 	"github.com/humangrass/price-keeper/internal/instance"
+	"github.com/humangrass/price-keeper/internal/usecases/keeper"
 
 	"github.com/humangrass/gommon/signal"
 	"github.com/urfave/cli/v2"
@@ -58,6 +60,12 @@ func Main(ctx *cli.Context) error {
 	await, _ := signal.Notifier(func() {
 		inst.Logger.Sugar().Info("recieve stop signal, start shutdown process..")
 	})
+
+	baseRepo := repository.NewBaseRepository(inst.Pool)
+	uc := keeper.NewKeeperUseCase(&baseRepo, inst.Logger)
+
+	uc.RegisterRoutes(inst.Server.Mux)
+	inst.Server.Start()
 
 	return await()
 }

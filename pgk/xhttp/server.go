@@ -9,9 +9,14 @@ import (
 	"go.uber.org/zap"
 )
 
+type RouteRegister interface {
+	RegisterRoutes(mux *http.ServeMux)
+}
+
 type Server struct {
 	*http.Server
 	logger *zap.SugaredLogger
+	Mux    *http.ServeMux
 }
 
 func NewServer(opt Opt, logger *zap.SugaredLogger) (*Server, error) {
@@ -24,7 +29,10 @@ func NewServer(opt Opt, logger *zap.SugaredLogger) (*Server, error) {
 	if opt.EnableHealthMethod {
 		mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
-			w.Write([]byte("OK"))
+			_, err = w.Write([]byte("OK"))
+			if err != nil {
+				logger.Errorf("HTTP server error: %v", err)
+			}
 		})
 	}
 
@@ -38,6 +46,7 @@ func NewServer(opt Opt, logger *zap.SugaredLogger) (*Server, error) {
 	return &Server{
 		Server: httpServer,
 		logger: logger,
+		Mux:    mux,
 	}, nil
 }
 
@@ -65,4 +74,8 @@ func (s *Server) Drop() error {
 
 func (s *Server) DropMsg() string {
 	return "graceful shutdown of HTTP server"
+}
+
+func (s *Server) RegisterRoutes(registrator RouteRegister) {
+	registrator.RegisterRoutes(s.Mux)
 }

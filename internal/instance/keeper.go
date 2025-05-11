@@ -3,7 +3,6 @@ package instance
 import (
 	"context"
 	"fmt"
-	"net/http"
 
 	"github.com/humangrass/price-keeper/pgk/logger"
 	"github.com/humangrass/price-keeper/pgk/xhttp"
@@ -16,7 +15,7 @@ import (
 type Instance struct {
 	*drop.Impl
 
-	Server *http.Server
+	Server *xhttp.Server
 	Logger *logger.Logger
 	Pool   database.Pool
 }
@@ -37,8 +36,8 @@ func NewInstance(ctx context.Context, opt *Opt) (*Instance, error) {
 	if err != nil {
 		return nil, err
 	}
-	server.Start()
-	i.AddDropper(server)
+	i.Server = server
+	i.AddDropper(i.Server)
 
 	if opt.Database.Dialect == "postgres" {
 		i.Pool, err = postgres.NewPool(i.Context(), opt.Database)
