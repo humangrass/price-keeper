@@ -11,3 +11,13 @@ go run ./cmd/jupiter/main.go --jupiter-token-id So111111111111111111111111111111
 ```bash
 go run ./cmd/keeper/main.go
 ```
+
+## Migrations
+
+```bash
+go run ./cmd/migrate/main.go --config-file keeper.example.yaml --help
+```
+
+```bash
+go run ./cmd/migrate/main.go --config-file keeper.example.yaml up-to --help
+```
