@@ -1,4 +1,3 @@
-// xhttp/server.go
 package xhttp
 
 import (
