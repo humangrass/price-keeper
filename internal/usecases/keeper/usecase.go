@@ -21,13 +21,14 @@ func (uc *UseCase) RegisterRoutes(mux *http.ServeMux) {
 
 func NewKeeperUseCase(
 	baseRepo *repository.BaseRepository,
+	tokenRepo *repository.TokensRepository,
 	logger *logger.Logger,
 ) *UseCase {
 	uc := &UseCase{
 		logger:          logger,
 		pairsRepository: baseRepo,
 		priceRepository: baseRepo,
-		tokenRepository: baseRepo,
+		tokenRepository: tokenRepo,
 	}
 
 	return uc

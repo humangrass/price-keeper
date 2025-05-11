@@ -1,6 +1,16 @@
 package repository
 
-import "github.com/humangrass/gommon/database"
+import (
+	"context"
+	"fmt"
+
+	"github.com/doug-martin/goqu/v9"
+	"github.com/humangrass/gommon/database"
+	"github.com/humangrass/price-keeper/domain/entities"
+	"github.com/humangrass/price-keeper/domain/models"
+)
+
+const TokensTableName = "tokens"
 
 type TokensRepository struct {
 	BaseRepository
@@ -13,5 +23,44 @@ func NewTokensRepository(pool database.Pool) *TokensRepository {
 }
 
 type TokenRepo interface {
-	// TODO:
+	GetTokens(ctx context.Context, params entities.RequestParams) ([]models.Token, int, error)
+}
+
+type TokenSelect struct {
+	models.Token
+}
+
+func (r *TokensRepository) GetTokens(ctx context.Context, params entities.RequestParams) ([]models.Token, int, error) {
+	var tokens []models.Token
+	var total int
+
+	_, err := r.pool.Builder().
+		Select(goqu.COUNT("uuid")).
+		From(TokensTableName).
+		ScanVal(&total)
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to count tokens: %w", err)
+	}
+
+	query := r.pool.Builder().
+		Select(
+			goqu.C("uuid"),
+			goqu.C("name"),
+			goqu.C("symbol"),
+			goqu.C("network_id"),
+			goqu.C("network"),
+		).
+		From(TokensTableName).
+		Limit(uint(params.Limit)).
+		Offset(uint(params.Offset))
+
+	switch params.OrderBy {
+	case entities.OrderByAsc:
+		query = query.Order(goqu.C("name").Asc())
+	case entities.OrderByDesc:
+		query = query.Order(goqu.C("name").Desc())
+	}
+
+	err = query.ScanStructsContext(ctx, &tokens)
+	return tokens, total, err
 }
