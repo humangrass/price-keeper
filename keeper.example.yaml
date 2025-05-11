@@ -1,0 +1,36 @@
+workers: 1
+runners:
+  sol:
+    id: 123sol
+    frame: 1m
+    vs:
+      - usdt
+      - btc
+      - eth
+  jup:
+    id: 321abcd
+    frame: 1m
+    vs:
+      - usdt
+      - sol
+      - ray
+database:
+  host: localhost
+  port: 5432
+  user: user
+  database: test
+  password: changeme123
+  max_execution_time: 30
+  max_open_conns: 20
+  max_idle_conns: 15
+  max_conn_max_lifetime: 10m0s
+  dialect: "postgres"
+  debug: true
+  ssl_mode: disable
+server:
+  read_timeout: 15s
+  write_timeout: 15s
+  host: localhost
+  port: 8888
+  enable_health_method: true
+is_production: false
