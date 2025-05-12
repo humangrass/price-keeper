@@ -41,3 +41,10 @@ func (r *TokensResponse) FillData(models []models.Token) {
 		}
 	}
 }
+
+type NewTokenRequest struct {
+	Name      string `json:"name" validate:"required,max=100"`
+	Symbol    string `json:"symbol" validate:"required,max=10"`
+	NetworkID string `json:"network_id" validate:"required,max=100"`
+	Network   string `json:"network" validate:"required,max=100"`
+}
