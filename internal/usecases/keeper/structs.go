@@ -5,6 +5,7 @@ import (
 	"github.com/humangrass/price-keeper/domain/models"
 )
 
+//easyjson:json
 type TokensResponse struct {
 	Data  []Token `json:"data"`
 	Total int     `json:"total"`
@@ -40,4 +41,11 @@ func (r *TokensResponse) FillData(models []models.Token) {
 			Network:   model.Network,
 		}
 	}
+}
+
+type NewTokenRequest struct {
+	Name      string `json:"name" validate:"required,max=100"`
+	Symbol    string `json:"symbol" validate:"required,max=10"`
+	NetworkID string `json:"network_id" validate:"required,max=100"`
+	Network   string `json:"network" validate:"required,max=100"`
 }

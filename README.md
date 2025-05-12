@@ -21,3 +21,9 @@ go run ./cmd/migrate/main.go --config-file keeper.example.yaml --help
 ```bash
 go run ./cmd/migrate/main.go --config-file keeper.example.yaml up-to --help
 ```
+
+## Swagger
+
+```bash
+swag init -g cmd/keeper/main.go --output docs --parseDependency --parseInternal
+```
