@@ -38,8 +38,8 @@ func (uc *UseCase) handleTokens(w http.ResponseWriter, r *http.Request) {
 // @Param limit query int false "Limit for pagination" default(10)
 // @Param orderBy query string false "Order by field" Enums(asc, desc) default(asc)
 // @Success 200 {object} []TokensResponse
-// @Failure 400 {object} map[string]string
-// @Failure 500 {object} map[string]string
+// @Failure 400 {object} xhttp.ErrorResponse
+// @Failure 500 {object} xhttp.ErrorResponse
 // @Router /tokens [get]
 func (uc *UseCase) getTokens(w http.ResponseWriter, r *http.Request) error {
 	var err error
@@ -68,9 +68,9 @@ func (uc *UseCase) getTokens(w http.ResponseWriter, r *http.Request) error {
 // @Accept  json
 // @Produce  json
 // @Param token body NewTokenRequest true "Token data"
-// @Success 201 {object} map[string]interface{}
-// @Failure 400 {object} map[string]string
-// @Failure 500 {object} map[string]string
+// @Success 201 {object} xhttp.ErrorResponse
+// @Failure 400 {object} xhttp.ErrorResponse
+// @Failure 500 {object} xhttp.ErrorResponse
 // @Router /tokens [post]
 func (uc *UseCase) createToken(w http.ResponseWriter, r *http.Request) error {
 	if r.Method != http.MethodPost {
@@ -106,8 +106,7 @@ func (uc *UseCase) createToken(w http.ResponseWriter, r *http.Request) error {
 			"Failed to create token")
 	}
 
-	return xhttp.RespondWithJSON(w, http.StatusCreated, map[string]interface{}{
-		"status": "success",
-		"token":  token,
+	return xhttp.RespondWithJSON(w, http.StatusCreated, xhttp.ErrorResponse{
+		Error: "",
 	})
 }

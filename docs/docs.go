@@ -68,19 +68,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/github_com_humangrass_price-keeper_pgk_xhttp.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/github_com_humangrass_price-keeper_pgk_xhttp.ErrorResponse"
                         }
                     }
                 }
@@ -112,26 +106,19 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/github_com_humangrass_price-keeper_pgk_xhttp.ErrorResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/github_com_humangrass_price-keeper_pgk_xhttp.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/github_com_humangrass_price-keeper_pgk_xhttp.ErrorResponse"
                         }
                     }
                 }
@@ -139,6 +126,14 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "github_com_humangrass_price-keeper_pgk_xhttp.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                }
+            }
+        },
         "internal_usecases_keeper.NewTokenRequest": {
             "type": "object",
             "required": [

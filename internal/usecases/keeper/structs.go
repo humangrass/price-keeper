@@ -5,6 +5,7 @@ import (
 	"github.com/humangrass/price-keeper/domain/models"
 )
 
+//easyjson:json
 type TokensResponse struct {
 	Data  []Token `json:"data"`
 	Total int     `json:"total"`
