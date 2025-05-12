@@ -29,6 +29,18 @@ func (uc *UseCase) handleTokens(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// @Summary Get tokens list
+// @Description Get paginated list of tokens
+// @Tags tokens
+// @Accept  json
+// @Produce  json
+// @Param offset query int false "Offset for pagination" default(0)
+// @Param limit query int false "Limit for pagination" default(10)
+// @Param orderBy query string false "Order by field" Enums(asc, desc) default(asc)
+// @Success 200 {object} []TokensResponse
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /tokens [get]
 func (uc *UseCase) getTokens(w http.ResponseWriter, r *http.Request) error {
 	var err error
 	params := entities.RequestParams{}
@@ -50,6 +62,16 @@ func (uc *UseCase) getTokens(w http.ResponseWriter, r *http.Request) error {
 	return xhttp.RespondWithJSON(w, http.StatusOK, response)
 }
 
+// @Summary Create new token
+// @Description Add a new token to the database
+// @Tags tokens
+// @Accept  json
+// @Produce  json
+// @Param token body NewTokenRequest true "Token data"
+// @Success 201 {object} map[string]interface{}
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /tokens [post]
 func (uc *UseCase) createToken(w http.ResponseWriter, r *http.Request) error {
 	if r.Method != http.MethodPost {
 		return xhttp.RespondWithError(w, http.StatusMethodNotAllowed, "Method not allowed")

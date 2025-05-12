@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/doug-martin/goqu/v9"
+	"github.com/google/uuid"
 	"github.com/humangrass/gommon/database"
 	"github.com/humangrass/price-keeper/domain/entities"
 	"github.com/humangrass/price-keeper/domain/models"
@@ -67,9 +68,9 @@ func (r *TokensRepository) GetTokens(ctx context.Context, params entities.Reques
 }
 
 func (r *TokensRepository) CreateToken(ctx context.Context, token *models.Token) error {
-	// if token.UUID == uuid.Nil {
-	// 	token.UUID = uuid.New()
-	// }
+	if token.UUID == uuid.Nil {
+		token.UUID = uuid.New()
+	}
 
 	_, err := r.pool.Builder().
 		Insert(TokensTableName).

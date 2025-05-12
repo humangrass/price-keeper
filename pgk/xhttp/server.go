@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"time"
 
+	_ "github.com/humangrass/price-keeper/docs"
+	httpSwagger "github.com/swaggo/http-swagger"
 	"go.uber.org/zap"
 )
 
@@ -35,6 +37,7 @@ func NewServer(opt Opt, logger *zap.SugaredLogger) (*Server, error) {
 			}
 		})
 	}
+	mux.HandleFunc("/swagger/", httpSwagger.WrapHandler)
 
 	httpServer := &http.Server{
 		Addr:         fmt.Sprintf("%s:%d", opt.Host, opt.Port),
