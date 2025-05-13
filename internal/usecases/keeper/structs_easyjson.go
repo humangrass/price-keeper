@@ -44,7 +44,7 @@ func easyjson6a975c40DecodeGithubComHumangrassPriceKeeperInternalUsecasesKeeper(
 				in.Delim('[')
 				if out.Data == nil {
 					if !in.IsDelim(']') {
-						out.Data = make([]Token, 0, 0)
+						out.Data = make([]Token, 0, 1)
 					} else {
 						out.Data = []Token{}
 					}
@@ -148,8 +148,6 @@ func easyjson6a975c40DecodeGithubComHumangrassPriceKeeperInternalUsecasesKeeper1
 			continue
 		}
 		switch key {
-		case "uuid":
-			out.UUID = string(in.String())
 		case "name":
 			out.Name = string(in.String())
 		case "symbol":
@@ -173,13 +171,8 @@ func easyjson6a975c40EncodeGithubComHumangrassPriceKeeperInternalUsecasesKeeper1
 	first := true
 	_ = first
 	{
-		const prefix string = ",\"uuid\":"
-		out.RawString(prefix[1:])
-		out.String(string(in.UUID))
-	}
-	{
 		const prefix string = ",\"name\":"
-		out.RawString(prefix)
+		out.RawString(prefix[1:])
 		out.String(string(in.Name))
 	}
 	{

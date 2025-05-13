@@ -13,7 +13,6 @@ type TokensResponse struct {
 }
 
 type Token struct {
-	UUID      string `json:"uuid"`
 	Name      string `json:"name"`
 	Symbol    string `json:"symbol"`
 	NetworkID string `json:"network_id"`
@@ -34,7 +33,6 @@ func (r *TokensResponse) FillData(models []models.Token) {
 	r.Data = make([]Token, len(models))
 	for i, model := range models {
 		r.Data[i] = Token{
-			UUID:      model.UUID.String(),
 			Name:      model.Name,
 			Symbol:    model.Symbol,
 			NetworkID: model.NetworkID,
