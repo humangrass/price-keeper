@@ -11,5 +11,5 @@ type Pair struct {
 	Numerator   uuid.UUID     `db:"numerator"`
 	Denominator uuid.UUID     `db:"denominator"`
 	Timeframe   time.Duration `db:"timeframe"`
-	IsActive    bool          `db:"is_activce"`
+	IsActive    bool          `db:"is_active"`
 }

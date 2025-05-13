@@ -8,19 +8,19 @@ import (
 	"strings"
 
 	"github.com/go-playground/validator/v10"
-
 	"github.com/humangrass/price-keeper/domain/entities"
 	"github.com/humangrass/price-keeper/domain/models"
+	"github.com/humangrass/price-keeper/pgk/xerror"
 	"github.com/humangrass/price-keeper/pgk/xhttp"
 )
 
-func (uc *UseCase) handleTokens(w http.ResponseWriter, r *http.Request) {
+func (uc *UseCase) handlePairs(w http.ResponseWriter, r *http.Request) {
 	var err error
 	switch r.Method {
 	case http.MethodGet:
-		err = uc.getTokens(w, r)
+		err = uc.getPairs(w, r)
 	case http.MethodPost:
-		err = uc.createToken(w, r)
+		err = uc.createPair(w, r)
 	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)
 	}
@@ -29,19 +29,7 @@ func (uc *UseCase) handleTokens(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// @Summary Get tokens list
-// @Description Get paginated list of tokens
-// @Tags tokens
-// @Accept  json
-// @Produce  json
-// @Param offset query int false "Offset for pagination" default(0)
-// @Param limit query int false "Limit for pagination" default(10)
-// @Param orderBy query string false "Order by field" Enums(asc, desc) default(asc)
-// @Success 200 {object} []TokensResponse
-// @Failure 400 {object} xhttp.ErrorResponse
-// @Failure 500 {object} xhttp.ErrorResponse
-// @Router /tokens [get]
-func (uc *UseCase) getTokens(w http.ResponseWriter, r *http.Request) error {
+func (uc *UseCase) getPairs(w http.ResponseWriter, r *http.Request) error {
 	var err error
 	params := entities.RequestParams{}
 	params, err = params.Parse(r)
@@ -51,28 +39,18 @@ func (uc *UseCase) getTokens(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	tokens, total, err := uc.tokenRepository.GetByParams(context.Background(), params)
+	pairs, total, err := uc.pairsRepository.GetByParams(context.Background(), params)
 	if err != nil {
 		uc.logger.Sugar().Error(err)
 		err = xhttp.RespondWithError(w, http.StatusInternalServerError, "Failed to retrieve tokens")
 		return err
 	}
 
-	response := NewTokensResponse(total, tokens, params)
+	response := NewPairsResponse(total, pairs, params)
 	return xhttp.RespondWithJSON(w, http.StatusOK, response)
 }
 
-// @Summary Create new token
-// @Description Add a new token to the database
-// @Tags tokens
-// @Accept  json
-// @Produce  json
-// @Param token body NewTokenRequest true "Token data"
-// @Success 201 {object} xhttp.ErrorResponse
-// @Failure 400 {object} xhttp.ErrorResponse
-// @Failure 500 {object} xhttp.ErrorResponse
-// @Router /tokens [post]
-func (uc *UseCase) createToken(w http.ResponseWriter, r *http.Request) error {
+func (uc *UseCase) createPair(w http.ResponseWriter, r *http.Request) error {
 	if r.Method != http.MethodPost {
 		return xhttp.RespondWithError(w, http.StatusMethodNotAllowed, "Method not allowed")
 	}
@@ -83,14 +61,14 @@ func (uc *UseCase) createToken(w http.ResponseWriter, r *http.Request) error {
 			"Failed to read request body")
 	}
 
-	var req NewTokenRequest
-	if err := req.UnmarshalJSON(body); err != nil {
+	var req NewPairRequest
+	if err = req.UnmarshalJSON(body); err != nil {
 		return xhttp.RespondWithError(w, http.StatusBadRequest,
 			"Invalid request body: "+err.Error())
 	}
 
 	validate := validator.New()
-	if err := validate.Struct(req); err != nil {
+	if err = validate.Struct(req); err != nil {
 		var validationErrors []string
 		for _, err := range err.(validator.ValidationErrors) {
 			validationErrors = append(validationErrors, fmt.Sprintf(
@@ -100,17 +78,38 @@ func (uc *UseCase) createToken(w http.ResponseWriter, r *http.Request) error {
 			"Validation error: "+strings.Join(validationErrors, ", "))
 	}
 
-	token := models.Token{
-		Name:      req.Name,
-		Symbol:    req.Symbol,
-		NetworkID: req.NetworkID,
-		Network:   req.Network,
+	numerator, err := uc.tokenRepository.GetTokenBySymbol(r.Context(), req.Numerator)
+	if err != nil {
+		if xerror.IsNotFound(err) {
+			return xhttp.RespondWithError(w, http.StatusBadRequest,
+				fmt.Sprintf("Numerator token '%s' not found", req.Numerator))
+		}
+		uc.logger.Sugar().Errorf("Failed to get numerator token: %v", err)
+		return xhttp.RespondWithError(w, http.StatusInternalServerError,
+			"Failed to create pair")
+	}
+	denominator, err := uc.tokenRepository.GetTokenBySymbol(r.Context(), req.Denominator)
+	if err != nil {
+		if xerror.IsNotFound(err) {
+			return xhttp.RespondWithError(w, http.StatusBadRequest,
+				fmt.Sprintf("Denominator token '%s' not found", req.Denominator))
+		}
+		uc.logger.Sugar().Errorf("Failed to get denominator token: %v", err)
+		return xhttp.RespondWithError(w, http.StatusInternalServerError,
+			"Failed to create pair")
 	}
 
-	if err := uc.tokenRepository.Create(r.Context(), &token); err != nil {
-		uc.logger.Sugar().Errorf("Failed to create token: %v", err)
+	pair := models.Pair{
+		Numerator:   numerator.UUID,
+		Denominator: denominator.UUID,
+		Timeframe:   req.Timeframe,
+		IsActive:    false,
+	}
+
+	if err := uc.pairsRepository.Create(r.Context(), &pair); err != nil {
+		uc.logger.Sugar().Errorf("Failed to create pair: %v", err)
 		return xhttp.RespondWithError(w, http.StatusInternalServerError,
-			"Failed to create token")
+			"Failed to create pair")
 	}
 
 	return xhttp.RespondWithJSON(w, http.StatusCreated, xhttp.ErrorResponse{
