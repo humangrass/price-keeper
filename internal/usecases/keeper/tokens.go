@@ -2,6 +2,8 @@ package keeper
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -84,9 +86,21 @@ func (uc *UseCase) createToken(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	var req NewTokenRequest
-	if err := req.UnmarshalJSON(body); err != nil {
-		return xhttp.RespondWithError(w, http.StatusBadRequest,
-			"Invalid request body: "+err.Error())
+	if err := json.Unmarshal(body, &req); err != nil {
+		var syntaxErr *json.SyntaxError
+		var unmarshalErr *json.UnmarshalTypeError
+
+		switch {
+		case errors.As(err, &syntaxErr):
+			return xhttp.RespondWithError(w, http.StatusBadRequest,
+				fmt.Sprintf("Malformed JSON at position %d", syntaxErr.Offset))
+		case errors.As(err, &unmarshalErr):
+			return xhttp.RespondWithError(w, http.StatusBadRequest,
+				fmt.Sprintf("Invalid value type for field '%s'", unmarshalErr.Field))
+		default:
+			return xhttp.RespondWithError(w, http.StatusBadRequest,
+				"Invalid request body")
+		}
 	}
 
 	validate := validator.New()

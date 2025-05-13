@@ -1,21 +1,18 @@
 package xhttp
 
 import (
+	"encoding/json"
 	"net/http"
-
-	"github.com/mailru/easyjson"
 )
 
-func RespondWithJSON(w http.ResponseWriter, code int, payload easyjson.Marshaler) error {
+func RespondWithJSON(w http.ResponseWriter, code int, payload any) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
 
-	_, err := easyjson.MarshalToWriter(payload, w)
-	if err != nil {
-		return err
-	}
+	encoder := json.NewEncoder(w)
+	encoder.SetIndent("", "  ")
 
-	return nil
+	return encoder.Encode(payload)
 }
 
 func RespondWithError(w http.ResponseWriter, code int, message string) error {
@@ -24,7 +21,6 @@ func RespondWithError(w http.ResponseWriter, code int, message string) error {
 	})
 }
 
-//easyjson:json
 type ErrorResponse struct {
 	Error string `json:"error"`
 }

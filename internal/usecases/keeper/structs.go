@@ -8,7 +8,6 @@ import (
 	"github.com/humangrass/price-keeper/domain/models"
 )
 
-//easyjson:json
 type TokensResponse struct {
 	Data  []Token `json:"data"`
 	Total int     `json:"total"`
@@ -44,7 +43,6 @@ func (r *TokensResponse) FillData(models []models.Token) {
 	}
 }
 
-//easyjson:json
 type PairsResponse struct {
 	Data  []Pair `json:"data"`
 	Total int    `json:"total"`
@@ -76,7 +74,6 @@ func (r *PairsResponse) FillData(models []models.Pair) {
 	}
 }
 
-//easyjson:json
 type NewTokenRequest struct {
 	Name      string `json:"name" validate:"required,max=100"`
 	Symbol    string `json:"symbol" validate:"required,max=10"`
@@ -84,7 +81,6 @@ type NewTokenRequest struct {
 	Network   string `json:"network" validate:"required,max=100"`
 }
 
-//easyjson:json
 type NewPairRequest struct {
 	Numerator   string        `json:"numerator" validate:"required,max=10"`
 	Denominator string        `json:"denominator" validate:"required,max=10"`
