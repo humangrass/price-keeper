@@ -32,6 +32,18 @@ func (uc *UseCase) handlePairs(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// getPairs retrieves token pairs
+// @Summary List token pairs
+// @Description Get paginated list of token pairs with sorting options
+// @Tags pairs
+// @Produce json
+// @Param offset query int false "Pagination offset" minimum(0) default(0)
+// @Param limit query int false "Items per page" minimum(1) maximum(100) default(10)
+// @Param orderBy query string false "Sort order" Enums(asc,desc) default(asc)
+// @Success 200 {object} PairsResponse "Successful operation"
+// @Failure 400 {object} xhttp.ErrorResponse "Invalid parameters"
+// @Failure 500 {object} xhttp.ErrorResponse "Internal server error"
+// @Router /pairs [get]
 func (uc *UseCase) getPairs(w http.ResponseWriter, r *http.Request) error {
 	var err error
 	params := entities.RequestParams{}
@@ -53,6 +65,18 @@ func (uc *UseCase) getPairs(w http.ResponseWriter, r *http.Request) error {
 	return xhttp.RespondWithJSON(w, http.StatusOK, response)
 }
 
+// createPair creates new token pair
+// @Summary Create token pair
+// @Description Register new token pair in the system
+// @Tags pairs
+// @Accept json
+// @Produce json
+// @Param pair body NewPairRequest true "Token pair data"
+// @Success 201 {object} Pair "Successfully created"
+// @Failure 400 {object} xhttp.ErrorResponse "Invalid input"
+// @Failure 404 {object} xhttp.ErrorResponse "Token not found"
+// @Failure 500 {object} xhttp.ErrorResponse "Internal server error"
+// @Router /pairs [post]
 func (uc *UseCase) createPair(w http.ResponseWriter, r *http.Request) error {
 	if r.Method != http.MethodPost {
 		return xhttp.RespondWithError(w, http.StatusMethodNotAllowed, "Method not allowed")

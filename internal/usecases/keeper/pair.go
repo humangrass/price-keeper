@@ -12,6 +12,8 @@ func (uc *UseCase) handlePair(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		err = uc.getPair(w, r)
+	case http.MethodPost:
+		err = uc.activatePair(w, r)
 	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)
 	}
@@ -27,6 +29,11 @@ func (uc *UseCase) getPair(w http.ResponseWriter, r *http.Request) error {
 	if len(parts) != 2 {
 		return xhttp.RespondWithError(w, http.StatusBadRequest, "Invalid symbol format")
 	}
+	// TODO:
+	return nil
+}
 
+func (uc *UseCase) activatePair(w http.ResponseWriter, r *http.Request) error {
+	// TODO:
 	return nil
 }
