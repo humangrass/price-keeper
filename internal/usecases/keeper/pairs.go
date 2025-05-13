@@ -10,6 +10,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/humangrass/price-keeper/domain/entities"
 	"github.com/humangrass/price-keeper/domain/models"
+	"github.com/humangrass/price-keeper/pgk/x/xtype"
 	"github.com/humangrass/price-keeper/pgk/xerror"
 	"github.com/humangrass/price-keeper/pgk/xhttp"
 )
@@ -102,7 +103,7 @@ func (uc *UseCase) createPair(w http.ResponseWriter, r *http.Request) error {
 	pair := models.Pair{
 		Numerator:   numerator.UUID,
 		Denominator: denominator.UUID,
-		Timeframe:   req.Timeframe,
+		Timeframe:   xtype.FromDuration(req.Timeframe),
 		IsActive:    false,
 	}
 
