@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/humangrass/gommon/database"
-	"github.com/humangrass/price-keeper/pgk/xhttp"
+	"github.com/humangrass/price-keeper/pgk/x/xhttp"
 	"gopkg.in/yaml.v3"
 )
 

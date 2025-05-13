@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/humangrass/price-keeper/pgk/logger"
-	"github.com/humangrass/price-keeper/pgk/xhttp"
+	"github.com/humangrass/price-keeper/pgk/x/xhttp"
 
 	"github.com/humangrass/gommon/database"
 	"github.com/humangrass/gommon/database/postgres"

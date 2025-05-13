@@ -9,7 +9,7 @@ import (
 	"github.com/humangrass/gommon/database"
 	"github.com/humangrass/price-keeper/domain/entities"
 	"github.com/humangrass/price-keeper/domain/models"
-	"github.com/humangrass/price-keeper/pgk/xerror"
+	"github.com/humangrass/price-keeper/pgk/x/xerror"
 )
 
 const TokensTableName = "tokens"

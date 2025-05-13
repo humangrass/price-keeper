@@ -13,7 +13,7 @@ import (
 
 	"github.com/humangrass/price-keeper/domain/entities"
 	"github.com/humangrass/price-keeper/domain/models"
-	"github.com/humangrass/price-keeper/pgk/xhttp"
+	"github.com/humangrass/price-keeper/pgk/x/xhttp"
 )
 
 func (uc *UseCase) handleTokens(w http.ResponseWriter, r *http.Request) {

@@ -12,9 +12,9 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/humangrass/price-keeper/domain/entities"
 	"github.com/humangrass/price-keeper/domain/models"
+	"github.com/humangrass/price-keeper/pgk/x/xerror"
+	"github.com/humangrass/price-keeper/pgk/x/xhttp"
 	"github.com/humangrass/price-keeper/pgk/x/xtype"
-	"github.com/humangrass/price-keeper/pgk/xerror"
-	"github.com/humangrass/price-keeper/pgk/xhttp"
 )
 
 func (uc *UseCase) handlePairs(w http.ResponseWriter, r *http.Request) {

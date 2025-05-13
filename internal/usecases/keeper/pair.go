@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/humangrass/price-keeper/pgk/xhttp"
+	"github.com/humangrass/price-keeper/pgk/x/xhttp"
 )
 
 func (uc *UseCase) handlePair(w http.ResponseWriter, r *http.Request) {
