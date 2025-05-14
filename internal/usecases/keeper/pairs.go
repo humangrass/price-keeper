@@ -139,8 +139,8 @@ func (uc *UseCase) createPair(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	pair := models.Pair{
-		Numerator:   numerator.UUID,
-		Denominator: denominator.UUID,
+		Numerator:   models.Token{UUID: numerator.UUID},
+		Denominator: models.Token{UUID: denominator.UUID},
 		Timeframe:   xtype.FromDuration(req.Timeframe),
 		IsActive:    false,
 	}

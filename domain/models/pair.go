@@ -7,8 +7,8 @@ import (
 
 type Pair struct {
 	UUID        uuid.UUID      `db:"uuid"`
-	Numerator   uuid.UUID      `db:"numerator"`
-	Denominator uuid.UUID      `db:"denominator"`
+	Numerator   Token          `db:"numerator"`
+	Denominator Token          `db:"denominator"`
 	Timeframe   xtype.Interval `db:"timeframe"`
 	IsActive    bool           `db:"is_active"`
 }

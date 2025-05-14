@@ -68,7 +68,7 @@ func (r *PairsResponse) FillData(models []models.Pair) {
 	r.Data = make([]Pair, len(models))
 	for i, model := range models {
 		r.Data[i] = Pair{
-			Ticket:    fmt.Sprintf("%s/%s", model.Numerator, model.Denominator),
+			Ticket:    fmt.Sprintf("%s/%s", model.Numerator.Symbol, model.Denominator.Symbol),
 			Timeframe: model.Timeframe.String(),
 		}
 	}
