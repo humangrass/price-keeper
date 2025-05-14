@@ -9,6 +9,7 @@ import (
 	"github.com/humangrass/gommon/database"
 	"github.com/humangrass/price-keeper/domain/entities"
 	"github.com/humangrass/price-keeper/domain/models"
+	"github.com/humangrass/price-keeper/pgk/x/xerror"
 )
 
 const TokensTableName = "tokens"
@@ -24,15 +25,16 @@ func NewTokensRepository(pool database.Pool) *TokensRepository {
 }
 
 type TokenRepo interface {
-	GetTokens(ctx context.Context, params entities.RequestParams) ([]models.Token, int, error)
-	CreateToken(ctx context.Context, token *models.Token) error
+	GetByParams(ctx context.Context, params entities.RequestParams) ([]models.Token, int, error)
+	Create(ctx context.Context, token *models.Token) error
+	GetTokenBySymbol(ctx context.Context, symbol string) (models.Token, error)
 }
 
 type TokenSelect struct {
 	models.Token
 }
 
-func (r *TokensRepository) GetTokens(ctx context.Context, params entities.RequestParams) ([]models.Token, int, error) {
+func (r *TokensRepository) GetByParams(ctx context.Context, params entities.RequestParams) ([]models.Token, int, error) {
 	var tokens []models.Token
 	var total int
 
@@ -67,7 +69,7 @@ func (r *TokensRepository) GetTokens(ctx context.Context, params entities.Reques
 	return tokens, total, err
 }
 
-func (r *TokensRepository) CreateToken(ctx context.Context, token *models.Token) error {
+func (r *TokensRepository) Create(ctx context.Context, token *models.Token) error {
 	if token.UUID == uuid.Nil {
 		token.UUID = uuid.New()
 	}
@@ -79,4 +81,30 @@ func (r *TokensRepository) CreateToken(ctx context.Context, token *models.Token)
 		ExecContext(ctx)
 
 	return err
+}
+
+func (r *TokensRepository) GetTokenBySymbol(ctx context.Context, symbol string) (models.Token, error) {
+	var token models.Token
+
+	found, err := r.pool.Builder().
+		Select(
+			"uuid",
+			"name",
+			"symbol",
+			"network_id",
+			"network",
+		).
+		From("tokens").
+		Where(goqu.C("symbol").Eq(symbol)).
+		ScanStructContext(ctx, &token)
+
+	if err != nil {
+		return models.Token{}, fmt.Errorf("failed to get token: %w", err)
+	}
+
+	if !found {
+		return models.Token{}, xerror.ErrNotFound
+	}
+
+	return token, nil
 }

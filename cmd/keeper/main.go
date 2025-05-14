@@ -68,7 +68,8 @@ func Main(ctx *cli.Context) error {
 
 	baseRepo := repository.NewBaseRepository(inst.Pool)
 	tokenRepo := repository.NewTokensRepository(inst.Pool)
-	uc := keeper.NewKeeperUseCase(&baseRepo, tokenRepo, inst.Logger)
+	pairRepo := repository.NewPairsRepository(inst.Pool)
+	uc := keeper.NewKeeperUseCase(&baseRepo, tokenRepo, pairRepo, inst.Logger)
 
 	uc.RegisterRoutes(inst.Server.Mux)
 	inst.Server.Start()

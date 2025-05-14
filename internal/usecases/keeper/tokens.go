@@ -3,7 +3,9 @@ package keeper
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"strings"
 
@@ -11,7 +13,7 @@ import (
 
 	"github.com/humangrass/price-keeper/domain/entities"
 	"github.com/humangrass/price-keeper/domain/models"
-	"github.com/humangrass/price-keeper/pgk/xhttp"
+	"github.com/humangrass/price-keeper/pgk/x/xhttp"
 )
 
 func (uc *UseCase) handleTokens(w http.ResponseWriter, r *http.Request) {
@@ -51,7 +53,7 @@ func (uc *UseCase) getTokens(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	tokens, total, err := uc.tokenRepository.GetTokens(context.Background(), params)
+	tokens, total, err := uc.tokenRepository.GetByParams(context.Background(), params)
 	if err != nil {
 		uc.logger.Sugar().Error(err)
 		err = xhttp.RespondWithError(w, http.StatusInternalServerError, "Failed to retrieve tokens")
@@ -77,9 +79,28 @@ func (uc *UseCase) createToken(w http.ResponseWriter, r *http.Request) error {
 		return xhttp.RespondWithError(w, http.StatusMethodNotAllowed, "Method not allowed")
 	}
 
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		return xhttp.RespondWithError(w, http.StatusBadRequest,
+			"Failed to read request body")
+	}
+
 	var req NewTokenRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		return xhttp.RespondWithError(w, http.StatusBadRequest, "Invalid request body")
+	if err := json.Unmarshal(body, &req); err != nil {
+		var syntaxErr *json.SyntaxError
+		var unmarshalErr *json.UnmarshalTypeError
+
+		switch {
+		case errors.As(err, &syntaxErr):
+			return xhttp.RespondWithError(w, http.StatusBadRequest,
+				fmt.Sprintf("Malformed JSON at position %d", syntaxErr.Offset))
+		case errors.As(err, &unmarshalErr):
+			return xhttp.RespondWithError(w, http.StatusBadRequest,
+				fmt.Sprintf("Invalid value type for field '%s'", unmarshalErr.Field))
+		default:
+			return xhttp.RespondWithError(w, http.StatusBadRequest,
+				"Invalid request body")
+		}
 	}
 
 	validate := validator.New()
@@ -100,7 +121,7 @@ func (uc *UseCase) createToken(w http.ResponseWriter, r *http.Request) error {
 		Network:   req.Network,
 	}
 
-	if err := uc.tokenRepository.CreateToken(r.Context(), &token); err != nil {
+	if err := uc.tokenRepository.Create(r.Context(), &token); err != nil {
 		uc.logger.Sugar().Errorf("Failed to create token: %v", err)
 		return xhttp.RespondWithError(w, http.StatusInternalServerError,
 			"Failed to create token")

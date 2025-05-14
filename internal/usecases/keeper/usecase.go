@@ -17,16 +17,19 @@ type UseCase struct {
 
 func (uc *UseCase) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/tokens", uc.handleTokens)
+	mux.HandleFunc("/api/pairs", uc.handlePairs)
+	mux.HandleFunc("/api/pairs/", uc.handlePair)
 }
 
 func NewKeeperUseCase(
 	baseRepo *repository.BaseRepository,
 	tokenRepo *repository.TokensRepository,
+	pairsRepo *repository.PairsRepository,
 	logger *logger.Logger,
 ) *UseCase {
 	uc := &UseCase{
 		logger:          logger,
-		pairsRepository: baseRepo,
+		pairsRepository: pairsRepo,
 		priceRepository: baseRepo,
 		tokenRepository: tokenRepo,
 	}
