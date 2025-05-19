@@ -1,4 +1,4 @@
-workers: 1
+refresh_interval: 3m
 runners:
   sol:
     id: 123sol

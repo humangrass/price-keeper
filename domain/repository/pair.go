@@ -28,6 +28,7 @@ type PairsRepo interface {
 	GetByParams(ctx context.Context, params entities.RequestParams) ([]models.Pair, int, error)
 	Create(ctx context.Context, pair *models.Pair) error
 	Update(ctx context.Context, pair *models.Pair) error
+	GetActivePairs(ctx context.Context) ([]models.Pair, error)
 }
 
 type pairScan struct {
@@ -48,20 +49,8 @@ type pairScan struct {
 	DenNetwork   string    `db:"denominator_network"`
 }
 
-func (r *PairsRepository) GetByParams(ctx context.Context, params entities.RequestParams) ([]models.Pair, int, error) {
-	var scans []pairScan
-	var total int
-
-	_, err := r.pool.Builder().
-		Select(goqu.COUNT("uuid")).
-		From(PairsTableName).
-		ScanVal(&total)
-
-	if err != nil {
-		return nil, 0, fmt.Errorf("failed to count pairs: %w", err)
-	}
-
-	query := r.pool.Builder().
+func (r *PairsRepository) pairQuery() *goqu.SelectDataset {
+	return r.pool.Builder().
 		Select(
 			goqu.I("p.uuid"),
 			goqu.I("p.timeframe"),
@@ -88,7 +77,23 @@ func (r *PairsRepository) GetByParams(ctx context.Context, params entities.Reque
 			goqu.T(TokensTableName).As("t2"),
 			goqu.On(goqu.I("p.denominator").Eq(goqu.I("t2.uuid"))),
 		).
-		Where(goqu.I("t1.network").Eq(goqu.I("t2.network"))).
+		Where(goqu.I("t1.network").Eq(goqu.I("t2.network")))
+}
+
+func (r *PairsRepository) GetByParams(ctx context.Context, params entities.RequestParams) ([]models.Pair, int, error) {
+	var scans []pairScan
+	var total int
+
+	_, err := r.pool.Builder().
+		Select(goqu.COUNT("uuid")).
+		From(PairsTableName).
+		ScanVal(&total)
+
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to count pairs: %w", err)
+	}
+
+	query := (r.pairQuery()).
 		Limit(uint(params.Limit)).
 		Offset(uint(params.Offset))
 
@@ -170,4 +175,37 @@ func (r *PairsRepository) Update(ctx context.Context, pair *models.Pair) error {
 	}
 
 	return nil
+}
+
+func (r *PairsRepository) GetActivePairs(ctx context.Context) ([]models.Pair, error) {
+	var scans []pairScan
+
+	query := (r.pairQuery()).
+		Where(goqu.I("p.is_active").Eq(true))
+
+	err := query.ScanStructsContext(ctx, &scans)
+	pairs := make([]models.Pair, len(scans))
+	for i, s := range scans {
+		pairs[i] = models.Pair{
+			UUID:      s.UUID,
+			Timeframe: s.Timeframe,
+			IsActive:  s.IsActive,
+			Numerator: models.Token{
+				UUID:      s.NumUUID,
+				Name:      s.NumName,
+				Symbol:    s.NumSymbol,
+				NetworkID: s.NumNetworkID,
+				Network:   s.NumNetwork,
+			},
+			Denominator: models.Token{
+				UUID:      s.DenUUID,
+				Name:      s.DenName,
+				Symbol:    s.DenSymbol,
+				NetworkID: s.DenNetworkID,
+				Network:   s.DenNetwork,
+			},
+		}
+	}
+
+	return pairs, err
 }
