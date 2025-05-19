@@ -3,7 +3,6 @@ package jupiter
 import (
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"time"
 
@@ -26,22 +25,22 @@ func NewClient(cfg config.Jupiter) *Client {
 	}
 }
 
-func (c *Client) GetPrices() error {
+func (c *Client) GetPrice() (*PriceResponse, error) {
 	url := c.buildURL()
 
 	resp, err := c.doRequest(url)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	if err := c.validateResponse(resp); err != nil {
-		return err
+		return nil, err
 	}
 
 	priceResp, err := c.decodeResponse(resp)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	return c.processResponse(priceResp)
@@ -56,6 +55,7 @@ func (c *Client) buildURL() string {
 }
 
 func (c *Client) doRequest(url string) (*http.Response, error) {
+	// TODO: на jupiter можно получать сразу несколько монет с одного запроса
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
@@ -86,10 +86,11 @@ func (c *Client) decodeResponse(resp *http.Response) (*PriceResponse, error) {
 	return &priceResp, nil
 }
 
-func (c *Client) processResponse(resp *PriceResponse) error {
-	for token, data := range resp.Data {
-		log.Printf("%s - %+v\n", token, data)
-	}
-	log.Printf("Request took %.4f seconds", resp.TimeTaken)
-	return nil
+func (c *Client) processResponse(resp *PriceResponse) (*PriceResponse, error) {
+	// TODO: может удалить?
+	// for token, data := range resp.Data {
+	// 	log.Printf("%s - %+v\n", token, data)
+	// }
+	// log.Printf("Request took %.4f seconds", resp.TimeTaken)
+	return resp, nil
 }

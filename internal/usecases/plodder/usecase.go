@@ -3,20 +3,25 @@ package plodder
 import (
 	"context"
 	"fmt"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/humangrass/price-keeper/config"
 	"github.com/humangrass/price-keeper/domain/models"
 	"github.com/humangrass/price-keeper/domain/repository"
+	"github.com/humangrass/price-keeper/internal/usecases/jupiter"
 	"github.com/humangrass/price-keeper/pgk/logger"
 	"github.com/robfig/cron/v3"
 	"go.uber.org/zap"
 )
 
 type UseCase struct {
-	pairRepo repository.PairsRepository
-	logger   *logger.Logger
+	pairRepo  *repository.PairsRepository
+	priceRepo *repository.PricesRepository
+	logger    *logger.Logger
 
 	activePairs     map[uuid.UUID]models.Pair
 	pairsMutex      sync.RWMutex
@@ -25,12 +30,14 @@ type UseCase struct {
 }
 
 func NewPlodderUseCase(
-	pairRepo repository.PairsRepository,
+	pairRepo *repository.PairsRepository,
+	priceRepo *repository.PricesRepository,
 	logger *logger.Logger,
 	refreshInterval time.Duration,
 ) *UseCase {
 	return &UseCase{
 		pairRepo:        pairRepo,
+		priceRepo:       priceRepo,
 		logger:          logger,
 		activePairs:     make(map[uuid.UUID]models.Pair),
 		cron:            cron.New(cron.WithSeconds()),
@@ -153,5 +160,29 @@ func (uc *UseCase) removeTaskFromCron(removedPair models.Pair) {
 func (uc *UseCase) processPair(ctx context.Context, pair models.Pair) error {
 	uc.logger.Sugar().Debug("Process pair", zap.String("pair", pair.String()))
 
-	return nil
+	if pair.Denominator.Network != pair.Numerator.Network || pair.Denominator.Network != "Solana" {
+		return fmt.Errorf("unimplemented")
+	}
+	client := jupiter.NewClient(config.Jupiter{
+		TokenID:   pair.Numerator.NetworkID,
+		VSTokenID: pair.Denominator.NetworkID,
+		ExtraInfo: false,
+	})
+
+	priceResp, err := client.GetPrice()
+	if err != nil {
+		return err
+	}
+	priceValue := priceResp.Data[pair.Numerator.NetworkID].Price
+	price, err := strconv.ParseFloat(strings.TrimSpace(priceValue), 64)
+	if err != nil {
+		return err
+	}
+
+	model := models.Price{
+		Price: price,
+		Pair:  &pair,
+	}
+	err = uc.priceRepo.Create(ctx, model)
+	return err
 }

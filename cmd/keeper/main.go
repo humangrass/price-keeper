@@ -67,11 +67,11 @@ func Main(ctx *cli.Context) error {
 		inst.Logger.Sugar().Info("recieve stop signal, start shutdown process..")
 	})
 
-	baseRepo := repository.NewBaseRepository(inst.Pool)
+	priceRepo := repository.NewPricesRepository(inst.Pool)
 	tokenRepo := repository.NewTokensRepository(inst.Pool)
 	pairRepo := repository.NewPairsRepository(inst.Pool)
-	ucKeeper := keeper.NewKeeperUseCase(&baseRepo, tokenRepo, pairRepo, inst.Logger)
-	ucPlodder := plodder.NewPlodderUseCase(*pairRepo, inst.Logger, cfg.RefreshInterval)
+	ucKeeper := keeper.NewKeeperUseCase(priceRepo, tokenRepo, pairRepo, inst.Logger)
+	ucPlodder := plodder.NewPlodderUseCase(pairRepo, priceRepo, inst.Logger, cfg.RefreshInterval)
 
 	ucKeeper.RegisterRoutes(inst.Server.Mux)
 	inst.Server.Start()
