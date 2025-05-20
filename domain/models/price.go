@@ -7,8 +7,8 @@ import (
 )
 
 type Price struct {
-	UUID     uuid.UUID `db:"uuid"`
-	TS       time.Time `db:"ts"`
-	Price    float64   `db:"price"`
-	PairUUID uuid.UUID `db:"pair_uuid"`
+	UUID  uuid.UUID `db:"uuid"`
+	TS    time.Time `db:"ts"`
+	Price float64   `db:"price"`
+	Pair  *Pair     `db:"pair_uuid"`
 }

@@ -55,5 +55,6 @@ func Main(ctx *cli.Context) error {
 
 	client := jupiter.NewClient(*cfg)
 
-	return client.GetPrices()
+	_, err = client.GetPrice()
+	return err
 }

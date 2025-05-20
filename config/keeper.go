@@ -3,6 +3,7 @@ package config
 import (
 	"bytes"
 	"os"
+	"time"
 
 	"github.com/humangrass/gommon/database"
 	"github.com/humangrass/price-keeper/pgk/x/xhttp"
@@ -10,11 +11,11 @@ import (
 )
 
 type Keeper struct {
-	Workers      uint         `yaml:"workers"`
-	Runners      any          `yaml:"runners"`
-	IsProduction bool         `yaml:"is_production"`
-	Server       xhttp.Opt    `yaml:"server"`
-	Database     database.Opt `yaml:"database"`
+	RefreshInterval time.Duration `yaml:"refresh_interval"`
+	Runners         any           `yaml:"runners"`
+	IsProduction    bool          `yaml:"is_production"`
+	Server          xhttp.Opt     `yaml:"server"`
+	Database        database.Opt  `yaml:"database"`
 }
 
 func NewKeeperConfig(filepath string) (*Keeper, error) {

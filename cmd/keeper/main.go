@@ -14,6 +14,7 @@ import (
 	"github.com/humangrass/price-keeper/domain/repository"
 	"github.com/humangrass/price-keeper/internal/instance"
 	"github.com/humangrass/price-keeper/internal/usecases/keeper"
+	"github.com/humangrass/price-keeper/internal/usecases/plodder"
 
 	"github.com/humangrass/gommon/signal"
 	"github.com/urfave/cli/v2"
@@ -66,13 +67,16 @@ func Main(ctx *cli.Context) error {
 		inst.Logger.Sugar().Info("recieve stop signal, start shutdown process..")
 	})
 
-	baseRepo := repository.NewBaseRepository(inst.Pool)
+	priceRepo := repository.NewPricesRepository(inst.Pool)
 	tokenRepo := repository.NewTokensRepository(inst.Pool)
 	pairRepo := repository.NewPairsRepository(inst.Pool)
-	uc := keeper.NewKeeperUseCase(&baseRepo, tokenRepo, pairRepo, inst.Logger)
+	ucKeeper := keeper.NewKeeperUseCase(priceRepo, tokenRepo, pairRepo, inst.Logger)
+	ucPlodder := plodder.NewPlodderUseCase(pairRepo, priceRepo, inst.Logger, cfg.RefreshInterval)
 
-	uc.RegisterRoutes(inst.Server.Mux)
+	ucKeeper.RegisterRoutes(inst.Server.Mux)
 	inst.Server.Start()
+
+	go ucPlodder.Run(appContext)
 
 	return await()
 }
